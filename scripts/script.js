@@ -1,24 +1,26 @@
-// Vertex Shader
+// Vertex shader
 var VSHADER_SOURCE =
-'uniform mat4 u_ModelMatrix;\n' +
-'attribute vec4 a_Position;\n' +
-'attribute vec4 a_Color;\n' +
-'varying vec4 v_Color;\n' +
-'void main() {\n' +
-'  gl_Position = u_ModelMatrix * a_Position;\n' +
-'  gl_PointSize = 10.0;\n' +
-'  v_Color = a_Color;\n' +
-'}\n';
+  'uniform mat4 u_ModelMatrix;\n' +
+  'attribute vec4 a_Position;\n' +
+  'attribute vec4 a_Color;\n' +
+  'varying vec4 v_Color;\n' +
+  'void main() {\n' +
+  '  gl_Position = u_ModelMatrix * a_Position;\n' +
+  '  gl_PointSize = 10.0;\n' +
+  '  v_Color = a_Color;\n' +
+  '}\n';
 
-// Fragment Shadder
+// Fragment shader
 var FSHADER_SOURCE =
-'precision mediump float;\n' +
-'varying vec4 v_Color;\n' +
-'void main() {\n' +
-'  gl_FragColor = v_Color;\n' +
-'}\n'
+  'precision mediump float;\n' +
+  'varying vec4 v_Color;\n' +
+  'void main() {\n' +
+  '  gl_FragColor = v_Color;\n' +
+  '}\n';
 
+// Global variables
 var floatsPerVertex = 7;
+var cylinderVertices, sphereVertices;
 
 function makeCylinder() {
     var color = new Float32Array([1.0, 1.0, 1.0]);
@@ -27,7 +29,7 @@ function makeCylinder() {
 
     cylinderVertices = new Float32Array(((topVertices * 6) - 2) * floatsPerVertex);
 
-    // Create the top cap of hte cylinder
+    // Create the top cap of the cylinder
     for (v = 1, j = 0; v < 2 * topVertices; v++, j += floatsPerVertex) {
         if (v % 2 == 0) {
             cylinderVertices[j] = 0.0;
@@ -60,8 +62,8 @@ function makeCylinder() {
             cylinderVertices[j + 6]= color[2];
         }
         else {
-            cylinderVertices[j] = bottomRadius * Math.cos(Math.PI * (v-1) / topVertices);
-            cylinderVertices[j + 1] = bottomRadius * Math.sin(Math.PI * (v-1) / topVertices);
+            cylinderVertices[j] = bottomRadius * Math.cos(Math.PI * (v - 1) / topVertices);
+            cylinderVertices[j + 1] = bottomRadius * Math.sin(Math.PI * (v - 1) / topVertices);
             cylinderVertices[j + 2] =- 1.0;
             cylinderVertices[j + 3] = 1.0;
             cylinderVertices[j + 4] = color[0];
@@ -71,10 +73,10 @@ function makeCylinder() {
     }
 
     // Create the bottom cap of the cylinder
-    for(v=0; v < (2*topVertices -1); v++, j+= floatsPerVertex) {
+    for(v = 0; v < (2 * topVertices - 1); v++, j += floatsPerVertex) {
         if(v%2==0) {
-            cylinderVertices[j] = bottomRadius * Math.cos(Math.PI*(v)/topVertices);
-            cylinderVertices[j + 1] = bottomRadius * Math.sin(Math.PI*(v)/topVertices);
+            cylinderVertices[j] = bottomRadius * Math.cos(Math.PI * (v) / topVertices);
+            cylinderVertices[j + 1] = bottomRadius * Math.sin(Math.PI * (v) / topVertices);
             cylinderVertices[j + 2] =- 1.0;
             cylinderVertices[j + 3] = 1.0;
             cylinderVertices[j + 4] = color[0];
@@ -177,7 +179,7 @@ function initVertexBuffer(rendering) {
 
     var shapeBufferHandle = rendering.createBuffer();
     if (!shapeBufferHandle) {
-        console.log('Failed to create the shape buffer object');
+        console.log('Failed to create the shape buffer object!');
         return false;
     }
 
@@ -187,7 +189,7 @@ function initVertexBuffer(rendering) {
     //Get graphics system's handle for our Vertex Shader's position-input variable:
     var a_Position = rendering.getAttribLocation(rendering.program, 'a_Position');
     if (a_Position < 0) {
-        console.log('Failed to get the storage location of a_Position');
+        console.log('Failed to get the storage location of a_Position!');
         return -1;
     }
 
@@ -206,7 +208,7 @@ function initVertexBuffer(rendering) {
     // Get graphics system's handle for our Vertex Shader's color-input variable;
     var a_Color = rendering.getAttribLocation(rendering.program, 'a_Color');
     if(a_Color < 0) {
-        console.log('Failed to get the storage location of a_Color');
+        console.log('Failed to get the storage location of a_Color!');
         return -1;
     }
     // Use handle to specify how to retrieve **COLOR** data from our VBO:
@@ -250,5 +252,11 @@ $(document).ready(function() {
     // Set canvas background
     rendering.clearColor(0.0, 0.0, 0.0, 1.0);
     rendering.enable(rendering.DEPTH_TEST);
-    rendering.clear(rendering.COLOR_BUFFER_BIT)
+    rendering.clear(rendering.COLOR_BUFFER_BIT);
+
+    // Set up variables for matrix movements
+    var u_ModelMatrix = rendering.getUniformLocation(rendering.program, 'u_ModelMatrix');
+    if (!u_ModelMatrix) {
+        throw new Error('Failed to get the storage location of u_ModelMatrix');
+    }
 });
