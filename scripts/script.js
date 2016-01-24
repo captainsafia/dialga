@@ -23,10 +23,13 @@ var floatsPerVertex = 7;
 var cylinderVertices, sphereVertices;
 
 function makeCylinder() {
+    // Create a white circle with 16 vertices at the top and a radius of 1.0
     var color = new Float32Array([1.0, 1.0, 1.0]);
     var topVertices = 16;
-    var bottomRadius = 1.6;
+    var bottomRadius = 1.0;
 
+    // Instaniate a list for the vertices of the cylinder which will consist of the
+    // top and bottom caps and the body of the cylinder
     cylinderVertices = new Float32Array(((topVertices * 6) - 2) * floatsPerVertex);
 
     // Create the top cap of the cylinder
@@ -74,7 +77,7 @@ function makeCylinder() {
 
     // Create the bottom cap of the cylinder
     for(v = 0; v < (2 * topVertices - 1); v++, j += floatsPerVertex) {
-        if(v%2==0) {
+        if(v % 2 == 0) {
             cylinderVertices[j] = bottomRadius * Math.cos(Math.PI * (v) / topVertices);
             cylinderVertices[j + 1] = bottomRadius * Math.sin(Math.PI * (v) / topVertices);
             cylinderVertices[j + 2] =- 1.0;
@@ -228,7 +231,7 @@ function initVertexBuffer(rendering) {
 
 $(document).ready(function() {
     // Set up a full-sized canvas
-    var canvas = $('#game').get(0);
+    var canvas = $('#webgl').get(0);
     $(canvas).css('width', $(document).width());
     $(canvas).css('height', $(document).height());
 
