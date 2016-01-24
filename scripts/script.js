@@ -93,15 +93,86 @@ function makeCylinder() {
     }
 }
 
+function makeSphere() {
+    var slices = 13;
+    var sliceVertices = 27;
+    var sliceAngle = Math.PI / slices;
+
+    var color = new Float32Array([0.8, 0.3, 0.01, 1]);
+
+    sphereVertices = new Float32Array(((slices * 2 * sliceVertices) - 2) * floatsPerVertex);
+
+    var cos0 = 0.0;
+    var sin0 = 0.0;
+    var cos1 = 0.0;
+    var sin1 = 0.0;
+
+    var j = 0;
+    var isLast = 0;
+    var isFirst = 1;
+
+    for(s = 0; s < slices; s++) {
+        if(s == 0) {
+            isFirst = 1;
+            cos0 = 1.0;
+            sin0 = 0.0;
+        }
+        else {
+            isFirst = 0;
+            cos0 = cos1;
+            sin0 = sin1;
+        }
+        cos1 = Math.cos((s + 1) * sliceAngle);
+        sin1 = Math.sin((s + 1) * sliceAngle);
+
+        if(s == slices-1) isLast = 1;
+
+        for(v = isFirst; v < 2 * sliceVertices - isLast; v++, j += floatsPerVertex) {
+            if(v % 2 == 0) {
+                sphereVertices[j] = sin0 * Math.cos(Math.PI * (v) /sliceVertices);
+                sphereVertices[j + 1] = sin0 * Math.sin(Math.PI * (v) / sliceVertices);
+                sphereVertices[j + 2] = cos0;
+                sphereVertices[j + 3] = 1.0;
+            }
+            else {
+                sphereVertices[j] = sin1 * Math.cos(Math.PI * (v - 1) / sliceVertices);
+                sphereVertices[j + 1] = sin1 * Math.sin(Math.PI * (v - 1) / sliceVertices);
+                sphereVertices[j + 2] = cos1;
+                sphereVertices[j + 3] = 1.0;
+            }
+            if(s == 0) {
+                sphereVertices[j + 4] = color[0];
+                sphereVertices[j + 5] = color[1];
+                sphereVertices[j + 6] = color[2];
+            }
+            else if (s == slices - 1) {
+                sphereVertices[j + 4] = color[0];
+                sphereVertices[j + 5] = color[1];
+                sphereVertices[j + 6] = color[2];
+            }
+            else {
+                sphereVertices[j + 4] = Math.random();
+                sphereVertices[j + 5] = Math.random();
+                sphereVertices[j + 6] = Math.random();
+            }
+        }
+    }
+}
+
 function initVertexBuffer(rendering) {
     makeCylinder();
+    makeSphere();
 
-    var totalSize = cylinderVertices.length;
+    var totalSize = cylinderVertices.length + sphereVertices.length;
     var totalVertices = totalSize / floatsPerVertex;
     var colorShapes = new Float32Array(totalSize);
 
     for(i = 0, j = 0; j < cylinderVertices.length; i++, j++) {
         colorShapes[i] = cylinderVertices[j];
+    }
+
+    for(j = 0; j < sphereVertices.length; i++, j++) {
+        colorShapes[i] = sphereVertices[j];
     }
 
     var shapeBufferHandle = rendering.createBuffer();
@@ -178,6 +249,6 @@ $(document).ready(function() {
 
     // Set canvas background
     rendering.clearColor(0.0, 0.0, 0.0, 1.0);
-    rendering.clear(rendering.COLOR_BUFFER_BIT)
     rendering.enable(rendering.DEPTH_TEST);
+    rendering.clear(rendering.COLOR_BUFFER_BIT)
 });
