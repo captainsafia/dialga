@@ -21,13 +21,14 @@ var FSHADER_SOURCE =
 // Global variables
 var floatsPerVertex = 7;
 var ANGLE_STEP = 45.0;
-var cylinderVertices, sphereVertices;
+var cylinderVertices, sphereVertices, halfSphereVertices;
 
 function makeCylinder() {
     // Create a white circle with 16 vertices at the top and a radius of 1.0
     var color = new Float32Array([0.7, 0.7, 0.7]);
+    var otherColor = new Float32Array([0.0, 0.0, 1.0]);
     var topVertices = 40;
-    var bottomRadius = 1.0;
+    var radius = 0.5;
 
     // Instaniate a list for the vertices of the cylinder which will consist of the
     // top and bottom caps and the body of the cylinder
@@ -37,15 +38,15 @@ function makeCylinder() {
     for (v = 1, j = 0; v < 2 * topVertices; v++, j += floatsPerVertex) {
         if (v % 2 == 0) {
             cylinderVertices[j] = 0.0;
-            cylinderVertices[j + 1] = 1.0;
+            cylinderVertices[j + 1] = 2.0;
             cylinderVertices[j + 2] = 1.0;
             cylinderVertices[j + 3] = 1.0;
             cylinderVertices[j + 4] = color[0];
             cylinderVertices[j + 5] = color[1];
             cylinderVertices[j + 6] = color[2];
         } else {
-            cylinderVertices[j] = Math.cos(Math.PI * (v - 1) / topVertices);
-            cylinderVertices[j + 1] = Math.sin(Math.PI * (v - 1) / topVertices);
+            cylinderVertices[j] = radius * Math.cos(Math.PI * (v - 1) / topVertices);
+            cylinderVertices[j + 1] = (radius * Math.sin(Math.PI * (v - 1) / topVertices)) + 2.0;
             cylinderVertices[j + 2] = 1.0;
             cylinderVertices[j + 3] = 1.0;
             cylinderVertices[j + 4] = color[0];
@@ -54,34 +55,56 @@ function makeCylinder() {
         }
     }
 
-    // Create the wall of the cylinder
+    // Create the handle of the lightsaber
     for(v = 0; v < 2 * topVertices; v++, j += floatsPerVertex) {
         if (v % 2 == 0) {
-            cylinderVertices[j] = Math.cos(Math.PI * (v) / topVertices);
-            cylinderVertices[j + 1] = Math.sin(Math.PI * (v) / topVertices);
+            cylinderVertices[j] = radius * Math.cos(Math.PI * (v) / topVertices);
+            cylinderVertices[j + 1] = radius * Math.sin(Math.PI * (v) / topVertices);
             cylinderVertices[j + 2] = 1.0;
-            cylinderVertices[j + 3] = 1.0;
-            cylinderVertices[j + 4]= color[0];
-            cylinderVertices[j + 5]= color[1];
-            cylinderVertices[j + 6]= color[2];
-        }
-        else {
-            cylinderVertices[j] = bottomRadius * Math.cos(Math.PI * (v - 1) / topVertices);
-            cylinderVertices[j + 1] = bottomRadius * Math.sin(Math.PI * (v - 1) / topVertices);
-            cylinderVertices[j + 2] =- 1.0;
             cylinderVertices[j + 3] = 1.0;
             cylinderVertices[j + 4] = color[0];
             cylinderVertices[j + 5] = color[1];
             cylinderVertices[j + 6] = color[2];
+        }
+        else {
+            cylinderVertices[j] = radius * Math.cos(Math.PI * (v - 1) / topVertices);
+            cylinderVertices[j + 1] = (radius * Math.sin(Math.PI * (v - 1) / topVertices)) + 2.0;
+            cylinderVertices[j + 2] = -1.0;
+            cylinderVertices[j + 3] = 1.0;
+            cylinderVertices[j + 4] = color[0];
+            cylinderVertices[j + 5] = color[1];
+            cylinderVertices[j + 6] = color[2];
+        }
+    }
+
+    // Create the beam of the lightsaber
+    for(v = 0; v < 2 * topVertices; v++, j += floatsPerVertex) {
+        if (v % 2 == 0) {
+            cylinderVertices[j] = radius * Math.cos(Math.PI * (v) / topVertices);
+            cylinderVertices[j + 1] = radius * Math.sin(Math.PI * (v) / topVertices);
+            cylinderVertices[j + 2] = 1.0;
+            cylinderVertices[j + 3] = 1.0;
+            cylinderVertices[j + 4] = otherColor[0];
+            cylinderVertices[j + 5] = otherColor[1];
+            cylinderVertices[j + 6] = otherColor[2];
+        }
+        else {
+            cylinderVertices[j] = radius * Math.cos(Math.PI * (v - 1) / topVertices);
+            cylinderVertices[j + 1] = ((radius * Math.sin(Math.PI * (v - 1) / topVertices)) + 2.8) * 2.4;
+            cylinderVertices[j + 2] = -1.0;
+            cylinderVertices[j + 3] = 1.0;
+            cylinderVertices[j + 4] = otherColor[0];
+            cylinderVertices[j + 5] = otherColor[1];
+            cylinderVertices[j + 6] = otherColor[2];
         }
     }
 
     // Create the bottom cap of the cylinder
     for(v = 0; v < (2 * topVertices - 1); v++, j += floatsPerVertex) {
         if(v % 2 == 0) {
-            cylinderVertices[j] = bottomRadius * Math.cos(Math.PI * (v) / topVertices);
-            cylinderVertices[j + 1] = bottomRadius * Math.sin(Math.PI * (v) / topVertices);
-            cylinderVertices[j + 2] =- 1.0;
+            cylinderVertices[j] = radius * Math.cos(Math.PI * (v) / topVertices);
+            cylinderVertices[j + 1] = radius * Math.sin(Math.PI * (v) / topVertices);
+            cylinderVertices[j + 2] = -1.0;
             cylinderVertices[j + 3] = 1.0;
             cylinderVertices[j + 4] = color[0];
             cylinderVertices[j + 5] = color[1];
@@ -90,7 +113,7 @@ function makeCylinder() {
         else {
             cylinderVertices[j] = 0.0;
             cylinderVertices[j + 1] = 0.0;
-            cylinderVertices[j + 2] =- 1.0;
+            cylinderVertices[j + 2] = -1.0;
             cylinderVertices[j + 3] = 1.0;
             cylinderVertices[j + 4] = color[0];
             cylinderVertices[j + 5] = color[1];
@@ -139,27 +162,74 @@ function makeSphere() {
                 sphereVertices[j + 1] = sin0 * Math.sin(Math.PI * (v) / sliceVertices);
                 sphereVertices[j + 2] = cos0;
                 sphereVertices[j + 3] = 1.0;
+                sphereVertices[j + 4] = color[0] + 0.2;
+                sphereVertices[j + 5] = color[1];
+                sphereVertices[j + 6] = color[2];
             }
             else {
                 sphereVertices[j] = sin1 * Math.cos(Math.PI * (v - 1) / sliceVertices);
                 sphereVertices[j + 1] = sin1 * Math.sin(Math.PI * (v - 1) / sliceVertices);
                 sphereVertices[j + 2] = cos1;
                 sphereVertices[j + 3] = 1.0;
-            }
-            if(s == 0) {
                 sphereVertices[j + 4] = color[0];
                 sphereVertices[j + 5] = color[1];
                 sphereVertices[j + 6] = color[2];
             }
-            else if (s == slices - 1) {
-                sphereVertices[j + 4] = color[0];
-                sphereVertices[j + 5] = color[1];
-                sphereVertices[j + 6] = color[2];
+        }
+    }
+}
+
+function makeHalfSphere() {
+    var slices = 13;
+    var sliceVertices = 27;
+    var sliceAngle = Math.PI / slices;
+
+    var color = new Float32Array([0.8, 0.3, 0.01, 1]);
+
+    halfSphereVertices = new Float32Array(((slices * 2 * sliceVertices) - 2) * floatsPerVertex);
+
+    var cos0 = 0.0;
+    var sin0 = 0.0;
+    var cos1 = 0.0;
+    var sin1 = 0.0;
+
+    var j = 0;
+    var isLast = 0;
+    var isFirst = 1;
+
+    for(s = 0; s < slices; s++) {
+        if(s == 0) {
+            isFirst = 1;
+            cos0 = 1.0;
+            sin0 = 0.0;
+        } else {
+            isFirst = 0;
+            cos0 = cos1;
+            sin0 = sin1;
+        }
+        cos1 = Math.cos((s + 1) * sliceAngle);
+        sin1 = Math.sin((s + 1) * sliceAngle);
+
+        if(s == slices - 1) isLast = 1;
+
+        for(v = isFirst; v < 2 * sliceVertices - isLast; v++, j += floatsPerVertex) {
+            if(v % 2 == 0) {
+                halfSphereVertices[j] = sin0 * Math.cos(Math.PI * (v) /sliceVertices);
+                halfSphereVertices[j + 1] = sin0 * Math.sin(Math.PI * (v) / sliceVertices);
+                halfSphereVertices[j + 2] = cos0;
+                halfSphereVertices[j + 3] = 1.0;
+                halfSphereVertices[j + 4] = color[0] - 0.8;
+                halfSphereVertices[j + 5] = color[1];
+                halfSphereVertices[j + 6] = color[2];
             }
             else {
-                sphereVertices[j + 4] = Math.random();
-                sphereVertices[j + 5] = Math.random();
-                sphereVertices[j + 6] = Math.random();
+                halfSphereVertices[j] = sin1 * Math.cos(Math.PI * (v - 1) / sliceVertices);
+                halfSphereVertices[j + 1] = sin1 * Math.sin(Math.PI * (v - 1) / sliceVertices);
+                halfSphereVertices[j + 2] = cos1;
+                halfSphereVertices[j + 3] = 1.0;
+                halfSphereVertices[j + 4] = color[0];
+                halfSphereVertices[j + 5] = color[1];
+                halfSphereVertices[j + 6] = color[2];
             }
         }
     }
@@ -168,8 +238,9 @@ function makeSphere() {
 function initVertexBuffer(rendering) {
     makeCylinder();
     makeSphere();
+    makeHalfSphere();
 
-    var totalSize = cylinderVertices.length + sphereVertices.length;
+    var totalSize = cylinderVertices.length + sphereVertices.length + halfSphereVertices.length;
     var totalVertices = totalSize / floatsPerVertex;
     var colorShapes = new Float32Array(totalSize);
 
@@ -181,6 +252,11 @@ function initVertexBuffer(rendering) {
     sphStart = i;
     for(j = 0; j < sphereVertices.length; i++, j++) {
         colorShapes[i] = sphereVertices[j];
+    }
+
+    halfSphStart = i;
+    for (j = 0; i < halfSphereVertices.length; i++, j++) {
+        colorShapes[i] = halfSphereVertices[j];
     }
 
     var shapeBufferHandle = rendering.createBuffer();
@@ -235,20 +311,29 @@ function initVertexBuffer(rendering) {
 function draw(gl, n, currentAngle, modelMatrix, u_ModelMatrix) {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  // Draw the cylinder
-  modelMatrix.setTranslate(-0.4, -0.4, 0.0);
-  modelMatrix.scale(0.2, 0.2, 0.2);
-  gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements);
-  gl.drawArrays(gl.TRIANGLE_STRIP,
+    // Draw the cylinder
+    modelMatrix.setTranslate(-0.4, -0.7, 0.0);
+    modelMatrix.scale(0.2, 0.2, 0.2);
+    gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements);
+
+    gl.drawArrays(gl.TRIANGLE_STRIP,
     cylStart / floatsPerVertex,
     cylinderVertices.length / floatsPerVertex);
 
+  // Draw the half sphere
+    modelMatrix.setTranslate(0.4, -0.2, 0.0);
+    modelMatrix.scale(0.3, 0.3, 0.3);
+    gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements);
+    gl.drawArrays(gl.TRIANGLE_STRIP,
+    halfSphStart / floatsPerVertex,
+    halfSphereVertices.length / floatsPerVertex);
+
   // Draw the sphere
-  modelMatrix.setTranslate(0.4, -0.4, 0.0);
-  modelMatrix.scale(0.3, 0.3, 0.3);
-  modelMatrix.rotate(currentAngle, 1, 1, 0);
-  gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements);
-  gl.drawArrays(gl.TRIANGLE_STRIP,
+    modelMatrix.setTranslate(0.4, -0.5, 0.0);
+    modelMatrix.scale(0.3, 0.3, 0.3);
+    modelMatrix.rotate(currentAngle, 1, 1, 0);
+    gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements);
+    gl.drawArrays(gl.TRIANGLE_STRIP,
     sphStart / floatsPerVertex,
     sphereVertices.length / floatsPerVertex);
 }
