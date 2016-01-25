@@ -366,6 +366,9 @@ function animateSaber(angle, direction) {
 }
 
 $(document).ready(function() {
+    console.log('Welcome to this WegGL application inspired by Star Wars!\n' +
+      'Press the "A" and "S" keys to rotate the light saber on the x-axis.')
+
     // Set up a full-sized canvas
     var canvas = $('#webgl').get(0);
     $(canvas).css('width', $(document).width());
