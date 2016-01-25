@@ -21,7 +21,7 @@ var FSHADER_SOURCE =
 // Global variables
 var floatsPerVertex = 7;
 var ANGLE_STEP = 45.0;
-var SABER_ANGLE_STEP = 90.0;
+var SABER_ANGLE_STEP = 10.0;
 var cylinderVertices, sphereVertices, halfSphereVertices;
 
 function makeCylinder() {
@@ -29,7 +29,7 @@ function makeCylinder() {
     var color = new Float32Array([0.7, 0.7, 0.7]);
     var otherColor = new Float32Array([0.0, 0.0, 1.0]);
     var topVertices = 40;
-    var radius = 0.5;
+    var radius = 0.25;
 
     // Instaniate a list for the vertices of the cylinder which will consist of the
     // top and bottom caps and the body of the cylinder
@@ -315,8 +315,8 @@ function draw(gl, n, currentBB8Angle, currentSaberAngle, modelMatrix, u_ModelMat
   // Draw the cylinder
   modelMatrix.setTranslate(-0.4, -0.7, 0.0);
   modelMatrix.scale(0.2, 0.2, 0.2);
-  gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements);
   modelMatrix.rotate(currentSaberAngle, 0, 1, 0);
+  gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements);
   gl.drawArrays(gl.TRIANGLE_STRIP,
   cylStart / floatsPerVertex,
   cylinderVertices.length / floatsPerVertex);
