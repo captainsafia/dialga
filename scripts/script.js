@@ -21,6 +21,7 @@ var FSHADER_SOURCE =
 // Global variables
 var floatsPerVertex = 7;
 var ANGLE_STEP = 45.0;
+var SABER_ANGLE_STEP = 90.0;
 var cylinderVertices, sphereVertices, halfSphereVertices;
 
 function makeCylinder() {
@@ -84,7 +85,7 @@ function makeCylinder() {
             cylinderVertices[j + 1] = radius * Math.sin(Math.PI * (v) / topVertices);
             cylinderVertices[j + 2] = 1.0;
             cylinderVertices[j + 3] = 1.0;
-            cylinderVertices[j + 4] = otherColor[0];
+            cylinderVertices[j + 4] = otherColor[0] + 0.3;
             cylinderVertices[j + 5] = otherColor[1];
             cylinderVertices[j + 6] = otherColor[2];
         }
@@ -94,7 +95,7 @@ function makeCylinder() {
             cylinderVertices[j + 2] = -1.0;
             cylinderVertices[j + 3] = 1.0;
             cylinderVertices[j + 4] = otherColor[0];
-            cylinderVertices[j + 5] = otherColor[1];
+            cylinderVertices[j + 5] = otherColor[1] + 0.3;
             cylinderVertices[j + 6] = otherColor[2];
         }
     }
@@ -308,44 +309,59 @@ function initVertexBuffer(rendering) {
     return totalVertices;
 }
 
-function draw(gl, n, currentAngle, modelMatrix, u_ModelMatrix) {
+function draw(gl, n, currentBB8Angle, currentSaberAngle, modelMatrix, u_ModelMatrix) {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    // Draw the cylinder
-    modelMatrix.setTranslate(-0.4, -0.7, 0.0);
-    modelMatrix.scale(0.2, 0.2, 0.2);
-    gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements);
-
-    gl.drawArrays(gl.TRIANGLE_STRIP,
-    cylStart / floatsPerVertex,
-    cylinderVertices.length / floatsPerVertex);
+  // Draw the cylinder
+  modelMatrix.setTranslate(-0.4, -0.7, 0.0);
+  modelMatrix.scale(0.2, 0.2, 0.2);
+  gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements);
+  modelMatrix.rotate(currentSaberAngle, 0, 1, 0);
+  gl.drawArrays(gl.TRIANGLE_STRIP,
+  cylStart / floatsPerVertex,
+  cylinderVertices.length / floatsPerVertex);
 
   // Draw the half sphere
-    modelMatrix.setTranslate(0.4, -0.2, 0.0);
-    modelMatrix.scale(0.3, 0.3, 0.3);
-    gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements);
-    gl.drawArrays(gl.TRIANGLE_STRIP,
-    halfSphStart / floatsPerVertex,
-    halfSphereVertices.length / floatsPerVertex);
+  modelMatrix.setTranslate(0.4, -0.2, 0.0);
+  modelMatrix.scale(0.3, 0.3, 0.3);
+  gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements);
+  gl.drawArrays(gl.TRIANGLE_STRIP,
+  halfSphStart / floatsPerVertex,
+  halfSphereVertices.length / floatsPerVertex);
 
   // Draw the sphere
-    modelMatrix.setTranslate(0.4, -0.5, 0.0);
-    modelMatrix.scale(0.3, 0.3, 0.3);
-    modelMatrix.rotate(currentAngle, 1, 1, 0);
-    gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements);
-    gl.drawArrays(gl.TRIANGLE_STRIP,
-    sphStart / floatsPerVertex,
-    sphereVertices.length / floatsPerVertex);
+  modelMatrix.setTranslate(0.4, -0.5, 0.0);
+  modelMatrix.scale(0.3, 0.3, 0.3);
+  modelMatrix.rotate(currentBB8Angle, 0, 1, 0);
+  gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements);
+  gl.drawArrays(gl.TRIANGLE_STRIP,
+  sphStart / floatsPerVertex,
+  sphereVertices.length / floatsPerVertex);
 }
 
 var g_last = Date.now();
 
-function animate(angle) {
+function animateBB8(angle) {
   var now = Date.now();
   var elapsed = now - g_last;
   g_last = now;
 
   var newAngle = angle + (ANGLE_STEP * elapsed) / 1000.0;
+  return newAngle %= 360;
+}
+
+var s_last = Date.now();
+
+function animateSaber(angle, direction) {
+  var now = Date.now();
+  var elapsed = now - s_last;
+  s_last = now;
+
+  if (direction == 1) {
+    var newAngle = angle - (SABER_ANGLE_STEP * elapsed) / 1000.0;
+  } else {
+    var newAngle = angle + (SABER_ANGLE_STEP * elapsed) / 1000.0;
+  }
   return newAngle %= 360;
 }
 
@@ -383,12 +399,22 @@ $(document).ready(function() {
         throw new Error('Failed to get the storage location of u_ModelMatrix');
     }
     var modelMatrix = new Matrix4();
-    var currentAngle = 0.0;
+    var currentBB8Angle = 0.0;
+    var currentSaberAngle = 0.0;
 
     // Update canvas at a certain time interval
     var tick = function() {
-        currentAngle = animate(currentAngle);
-        draw(rendering, vertices, currentAngle, modelMatrix, u_ModelMatrix);
+        currentBB8Angle = animateBB8(currentBB8Angle);
+
+        $(document).keypress(function(event) {
+          if (event.which == 97) {
+            currentSaberAngle = animateSaber(currentSaberAngle, 1);
+          } else if (event.which == 115) {
+            currentSaberAngle = animateSaber(currentSaberAngle, 0);
+          }
+        });
+
+        draw(rendering, vertices, currentBB8Angle, currentSaberAngle, modelMatrix, u_ModelMatrix);
         requestAnimationFrame(tick, canvas);
     };
 
