@@ -23,7 +23,7 @@ var floatsPerVertex = 7;
 var ANGLE_STEP = 45.0;
 var SABER_ANGLE_STEP = 10.0;
 
-function makeCylinder(radius) {
+function makeCylinder(radius, faceRight) {
     // Create a white circle with 16 vertices at the top and a radius of 1.0
     var topVertices = 40;
 
@@ -55,8 +55,14 @@ function makeCylinder(radius) {
     // Create the tube of the cylinder
     for(v = 0; v < 2 * topVertices; v++, j += floatsPerVertex) {
         if (v % 2 == 0) {
-            cylinderVertices[j] = Math.cos(Math.PI * (v) / topVertices);
-            cylinderVertices[j + 1] = Math.sin(Math.PI * (v) / topVertices);
+            if (faceRight) {
+              cylinderVertices[j] = radius * Math.cos(Math.PI * (v) / topVertices);
+              cylinderVertices[j + 1] = radius * Math.sin(Math.PI * (v) / topVertices);
+            } else {
+              cylinderVertices[j] = Math.cos(Math.PI * (v) / topVertices);
+              cylinderVertices[j + 1] = Math.sin(Math.PI * (v) / topVertices);
+            }
+
             cylinderVertices[j + 2] = 1.0;
             cylinderVertices[j + 3] = 1.0;
             cylinderVertices[j + 4] = Math.random();
@@ -64,8 +70,14 @@ function makeCylinder(radius) {
             cylinderVertices[j + 6] = Math.random();
         }
         else {
-            cylinderVertices[j] = radius * Math.cos(Math.PI * (v - 1) / topVertices);
-            cylinderVertices[j + 1] = radius * Math.sin(Math.PI * (v - 1) / topVertices);
+            if (faceRight) {
+              cylinderVertices[j] = Math.cos(Math.PI * (v - 1) / topVertices);
+              cylinderVertices[j + 1] = Math.sin(Math.PI * (v - 1) / topVertices);
+            } else {
+              cylinderVertices[j] = radius * Math.cos(Math.PI * (v - 1) / topVertices);
+              cylinderVertices[j + 1] = radius * Math.sin(Math.PI * (v - 1) / topVertices);
+            }
+
             cylinderVertices[j + 2] = -1.0;
             cylinderVertices[j + 3] = 1.0;
             cylinderVertices[j + 4] = Math.random();
@@ -77,8 +89,14 @@ function makeCylinder(radius) {
     // Create the bottom cap of the cylinder
     for(v = 0; v < (2 * topVertices - 1); v++, j += floatsPerVertex) {
         if(v % 2 == 0) {
-            cylinderVertices[j] = radius * Math.cos(Math.PI * (v) / topVertices);
-            cylinderVertices[j + 1] = radius * Math.sin(Math.PI * (v) / topVertices);
+            if (faceRight) {
+              cylinderVertices[j] = 0.0;
+              cylinderVertices[j + 1] = 0.0;
+            } else {
+              cylinderVertices[j] = radius * Math.cos(Math.PI * (v) / topVertices);
+              cylinderVertices[j + 1] = radius * Math.sin(Math.PI * (v) / topVertices);
+            }
+
             cylinderVertices[j + 2] = -1.0;
             cylinderVertices[j + 3] = 1.0;
             cylinderVertices[j + 4] = Math.random();
@@ -86,8 +104,14 @@ function makeCylinder(radius) {
             cylinderVertices[j + 6] = Math.random();
         }
         else {
-            cylinderVertices[j] = 0.0;
-            cylinderVertices[j + 1] = 0.0;
+            if (faceRight) {
+              cylinderVertices[j] = Math.cos(Math.PI * (v - 1) / topVertices);
+              cylinderVertices[j + 1] = Math.sin(Math.PI * (v - 1) / topVertices);
+            } else {
+              cylinderVertices[j] = 0.0;
+              cylinderVertices[j + 1] = 0.0;
+            }
+
             cylinderVertices[j + 2] = -1.0;
             cylinderVertices[j + 3] = 1.0;
             cylinderVertices[j + 4] = Math.random();
@@ -156,21 +180,45 @@ function makeSphere(sliceVertices) {
 }
 
 function initVertexBuffer(rendering) {
-    makeCylinder();
-    makeSphere();
+    planet = makeSphere(5);
+    moon1 = makeSphere(7);
+    moon2 = makeSphere(9);
+    moon3 = makeSphere(11);
+    leftWing = makeCylinder(0.5, false);
+    rightWing = makeCylinder(0.5, true)
 
-    var totalSize = cylinderVertices.length + sphereVertices.length;
+    var totalSize = planet.length + moon1.length + moon2.length + moon3.length + leftWing.length + rightWing.length;
     var totalVertices = totalSize / floatsPerVertex;
     var colorShapes = new Float32Array(totalSize);
 
-    cylStart = 0;
-    for(i = 0, j = 0; j < cylinderVertices.length; i++, j++) {
-        colorShapes[i] = cylinderVertices[j];
+    planetStart = 0;
+    for(i = 0, j = 0; j < planet.length; i++, j++) {
+        colorShapes[i] = planet[j];
     }
 
-    sphStart = i;
-    for(j = 0; j < sphereVertices.length; i++, j++) {
-        colorShapes[i] = sphereVertices[j];
+    moon1Start = i;
+    for(j = 0; j < moon1.length; i++, j++) {
+        colorShapes[i] = moon1[j];
+    }
+
+    moon2Start = i;
+    for(j = 0; j < moon2.length; i++, j++) {
+        colorShapes[i] = moon2[j];
+    }
+
+    moon3Start = i;
+    for(j = 0; j < moon3.length; i++, j++) {
+        colorShapes[i] = moon3[j];
+    }
+
+    leftWingStart = i;
+    for(j = 0; j < moon3.length; i++, j++) {
+        colorShapes[i] = leftWing[j];
+    }
+
+    rightWingStart = i;
+    for(j = 0; j < moon3.length; i++, j++) {
+        colorShapes[i] = rightWing[j];
     }
 
     var shapeBufferHandle = rendering.createBuffer();
@@ -222,51 +270,58 @@ function initVertexBuffer(rendering) {
     return totalVertices;
 }
 
-function draw(gl, n, currentBB8Angle, currentSaberAngle, modelMatrix, u_ModelMatrix) {
+function draw(gl, n, bodyAngle, modelMatrix, u_ModelMatrix) {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  // Draw the cylinder
-  modelMatrix.setTranslate(-0.4, -0.7, 0.0);
-  modelMatrix.scale(0.2, 0.2, 0.2);
-  modelMatrix.rotate(currentSaberAngle, 0, 1, 0);
+  // Draw the planet
+  modelMatrix.setTranslate(-0.6, -0.8, 0.0);
+  modelMatrix.scale(0.1, 0.1, 0.1);
+  modelMatrix.rotate(bodyAngle, 0, 1, 0);
   gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements);
-  gl.drawArrays(gl.TRIANGLE_STRIP,
-  cylStart / floatsPerVertex,
-  cylinderVertices.length / floatsPerVertex);
+  gl.drawArrays(gl.TRIANGLE_STRIP, planetStart / floatsPerVertex, planet.length / floatsPerVertex);
 
-  // Draw the sphere
-  modelMatrix.setTranslate(0.4, -0.5, 0.0);
-  modelMatrix.scale(0.3, 0.3, 0.3);
-  modelMatrix.rotate(currentBB8Angle, 0, 1, 0);
+  // Draw the first moon
+  modelMatrix.setTranslate(-0.6, -0.3, 0.0);
+  modelMatrix.scale(0.2, 0.2, 0.2);
+  modelMatrix.rotate(bodyAngle, 0, 1, 0);
   gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements);
-  gl.drawArrays(gl.TRIANGLE_STRIP,
-  sphStart / floatsPerVertex,
-  sphereVertices.length / floatsPerVertex);
+  gl.drawArrays(gl.TRIANGLE_STRIP, moon1Start / floatsPerVertex, moon1.length / floatsPerVertex);
+
+  // Draw the second moon
+  modelMatrix.setTranslate(-0.6, 0.2, 0.0);
+  modelMatrix.scale(0.2, 0.2, 0.2);
+  modelMatrix.rotate(bodyAngle, 0, 1, 0);
+  gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements);
+  gl.drawArrays(gl.TRIANGLE_STRIP, moon2Start / floatsPerVertex, moon2.length / floatsPerVertex);
+
+  // Draw the third moon
+  modelMatrix.setTranslate(-0.6, 0.7, 0.0);
+  modelMatrix.scale(0.1, 0.1, 0.1);
+  modelMatrix.rotate(bodyAngle, 0, 1, 0);
+  gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements);
+  gl.drawArrays(gl.TRIANGLE_STRIP, moon3Start / floatsPerVertex, moon3.length / floatsPerVertex);
+
+  // Draw the left wing
+  modelMatrix.setTranslate(0.4, 0.2, 0.0);
+  modelMatrix.scale(0.1, 0.1, 0.1);
+  gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements);
+  gl.drawArrays(gl.TRIANGLE_STRIP, leftWingStart / floatsPerVertex, leftWing.length / floatsPerVertex);
+
+  // Draw the right wing
+  modelMatrix.setTranslate(0.4, 0.7, 0.0);
+  modelMatrix.scale(0.1, 0.1, 0.1);
+  gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements);
+  gl.drawArrays(gl.TRIANGLE_STRIP, rightWingStart / floatsPerVertex, rightWing.length / floatsPerVertex);
 }
 
 var g_last = Date.now();
 
-function animateBB8(angle) {
+function animate(angle) {
   var now = Date.now();
   var elapsed = now - g_last;
   g_last = now;
 
   var newAngle = angle + (ANGLE_STEP * elapsed) / 1000.0;
-  return newAngle %= 360;
-}
-
-var s_last = Date.now();
-
-function animateSaber(angle, direction) {
-  var now = Date.now();
-  var elapsed = now - s_last;
-  s_last = now;
-
-  if (direction == 1) {
-    var newAngle = angle - (SABER_ANGLE_STEP * elapsed) / 1000.0;
-  } else {
-    var newAngle = angle + (SABER_ANGLE_STEP * elapsed) / 1000.0;
-  }
   return newAngle %= 360;
 }
 
@@ -302,22 +357,26 @@ $(document).ready(function() {
         throw new Error('Failed to get the storage location of u_ModelMatrix');
     }
     var modelMatrix = new Matrix4();
-    var currentBB8Angle = 0.0;
-    var currentSaberAngle = 0.0;
+    var bodyAngle = 0.0;
+    var planetsStopped = false;
+    var isDragging = false;
 
     // Update canvas at a certain time interval
     var tick = function() {
-        currentBB8Angle = animateBB8(currentBB8Angle);
-
-        $(document).keypress(function(event) {
-          if (event.which == 97) {
-            currentSaberAngle = animateSaber(currentSaberAngle, 1);
-          } else if (event.which == 115) {
-            currentSaberAngle = animateSaber(currentSaberAngle, 0);
+        // Check if the user has clicked on the canvas to halt the planets
+        // or to restore the scene
+        $(canvas).click(function() {
+          if (planetsStopped) {
+            planetsStopped = false;
+          } else {
+            planetsStopped = true;
           }
         });
+        if (!planetsStopped) {
+          bodyAngle = animate(bodyAngle)
+        }
 
-        draw(rendering, vertices, currentBB8Angle, currentSaberAngle, modelMatrix, u_ModelMatrix);
+        draw(rendering, vertices, bodyAngle, modelMatrix, u_ModelMatrix);
         requestAnimationFrame(tick, canvas);
     };
 
